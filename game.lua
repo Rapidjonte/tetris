@@ -42,6 +42,7 @@ return {
 
 		a_ready = true
 		b_ready = true
+		down_ready = false
 
 		function update_fall_speed()
 			if level < 30 then
@@ -128,19 +129,24 @@ return {
 			update_level(#delete_rows) end
 
 		function b_pressed()
-			return love.keyboard.isDown("a") end
+			return love.keyboard.isDown("a") or (activeJoystick and activeJoystick:isGamepadDown("dpleft"))
+		end
 
 		function a_pressed()
-			return love.keyboard.isDown("d") end
+			return love.keyboard.isDown("d") or (activeJoystick and activeJoystick:isGamepadDown("dpright"))
+		end
 
 		function down_pressed()
-			return love.keyboard.isDown("s") end
+			return love.keyboard.isDown("s") or (activeJoystick and activeJoystick:isGamepadDown("dpdown"))
+		end
 
 		function left_pressed()
-			return love.keyboard.isDown("left") end
+			return love.keyboard.isDown("left") or (activeJoystick and activeJoystick:isGamepadDown("x"))
+		end
 
 		function right_pressed()
-			return love.keyboard.isDown("right") end
+			return love.keyboard.isDown("right") or (activeJoystick and activeJoystick:isGamepadDown("b"))
+		end
 	end,
 	
 	update = function(dt)
@@ -169,7 +175,7 @@ return {
 				frames_delayed = 0
 			end
 		end
-		if down_pressed() and not (b_pressed() or a_pressed()) then
+		if down_pressed() and down_ready and not (b_pressed() or a_pressed()) and current then
 			if soft_drop_hold_time >= frameTime * 3 then
 				UPDATE_START_SPEED = speeds[19]
 				timers[1].duration = UPDATE_START_SPEED
@@ -181,7 +187,7 @@ return {
 			soft_drop_hold_time = 0
 			update_fall_speed()
 		end
-		if a_pressed() and a_ready and not down_pressed() then
+		if a_pressed() and a_ready and not down_pressed() and current then
 			if timers[2].active == false then 
 				DAS = DAS + 1
 				if DAS == -1 then DAS = 0 end
@@ -191,7 +197,7 @@ return {
 				end
 				timers[2]:activate()
 			end
-		elseif b_pressed() and b_ready and not down_pressed() then
+		elseif b_pressed() and b_ready and not down_pressed() and current then
 			if timers[4].active == false then 
 				DAS = DAS + 1
 				if DAS >= 16 and current then
@@ -257,8 +263,11 @@ return {
 				end
 				timers[4]:activate()
 			end
-			if key == "s" and timers[5].active then
-				timers[5]:deactivate()
+			if key == "s" then
+				if timers[5].active then
+					timers[5]:deactivate()
+				end
+				down_ready = true
 			end
 		end
 	end,

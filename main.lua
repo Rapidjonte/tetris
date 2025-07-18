@@ -36,7 +36,6 @@ function love.load()
 end
 
 function love.update(dt)
-	if love.keyboard.isDown("escape") then love.event.push('quit') end
 	flux.update(dt)
 	GameState.update(dt)
 end
@@ -58,9 +57,53 @@ function love.resize(w, h)
 end
 
 function love.keypressed(key, scancode, isrepeat)
-	GameState.input(key)
+	if key == "escape" then
+		love.event.push('quit')
+	else
+		GameState.input(key)
+	end
 end
 
 function love.keyreleased(key, scancode)
 	GameState.released(key)
+end
+
+function love.gamepadpressed(joystick, button)
+	if button == "dpleft" then
+		GameState.input("a")
+	elseif button == "dpright" then
+		GameState.input("d")
+	elseif button == "x" then
+		GameState.input("left")
+	elseif button == "b" then
+		GameState.input("right")
+	elseif button == "dpdown" then
+		GameState.input("s")
+	end
+end
+
+function love.gamepadreleased(joystick, button)
+	if button == "dpleft" then
+		GameState.released("a")
+	elseif button == "dpright" then
+		GameState.released("d")
+	elseif button == "x" then
+		GameState.released("left")
+	elseif button == "b" then
+		GameState.released("right")
+	elseif button == "dpdown" then
+		GameState.released("s")
+	end
+end
+
+function love.joystickadded(js)
+	if js:isGamepad() then
+		activeJoystick = js
+	end
+end
+
+function love.joystickremoved(js)
+	if js == activeJoystick then
+		activeJoystick = nil
+	end
 end

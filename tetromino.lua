@@ -15,7 +15,9 @@ function Tetromino:new(shape, x, y)
     return self
 end
 
-function Tetromino:spawn()
+function Tetromino:spawn(static)
+	static = static or false
+
 	local letters = {}
     for letter, _ in pairs(TETROMINOS) do
         table.insert(letters, letter)
@@ -23,9 +25,13 @@ function Tetromino:spawn()
 	math.randomseed(love.timer.getTime())
 	local randomLetter = letters[math.random(#letters)]
 	table.insert(tetrominos, (Tetromino(randomLetter, math.floor(COLUMNS/2), 0)))
-	current = tetrominos[#tetrominos]
-	if current:next_move_vertical_collide(0) then
-		GameState.set("death")
+
+	if not static then
+		current = tetrominos[#tetrominos]
+		down_ready = false
+		if current:next_move_vertical_collide(0) then
+			GameState.set("death")
+		end
 	end
 end
 
