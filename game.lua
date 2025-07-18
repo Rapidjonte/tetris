@@ -1,0 +1,213 @@
+return {
+	enter = function(dt)
+		font = love.graphics.newFont("font.ttf", 50)
+
+		level = 0
+		score = 0
+		softDrops = 0
+		total_lines = 0
+		lines_to_next = 10
+
+		DAS = 0
+		frames_delayed = 0
+		spawning = true
+
+		function createGrid(columns, rows)
+		    local grid = {}
+		    for y = 1, rows do
+		        grid[y] = {}
+		        for x = 1, columns do
+		            grid[y][x] = 0
+		        end
+		    end
+		    return grid end
+		field_data = createGrid(COLUMNS, ROWS)
+		tetrominos = {}
+		current = nil
+
+		timers = { 
+			timer(UPDATE_START_SPEED, true, function() if current then current:move_down() end end),
+			timer(frameTime),--		[2] auto shift
+			timer(frameTime),--		[3] entry delay
+			timer(frameTime),--		[4] auto shift 2
+		}
+		timers[1]:activate()
+
+		function update_fall_speed()
+			if level < 30 then
+				UPDATE_START_SPEED = speeds[level]
+			else
+				UPDATE_START_SPEED = speeds[29]
+			end
+			timers[1].duration = UPDATE_START_SPEED end
+		update_fall_speed()
+
+		function update_level(lines_cleared)
+			total_lines = total_lines + lines_cleared
+			lines_to_next = lines_to_next - lines_cleared
+
+			while lines_to_next <= 0 do
+				level = level + 1
+				lines_to_next = lines_to_next + 10
+				if level == 235 then
+					lines_to_next = lines_to_next + 800
+				end
+				update_fall_speed()
+			end end
+
+		function check_finished_rows()
+			local delete_rows = {}
+			for y = 1, #field_data do
+				local filled = true
+				for x = 1, #field_data[y] do
+			        if field_data[y][x] == 0 then
+			            filled = false
+			            break
+			        end
+			    end
+			    if filled then
+			    	table.insert(delete_rows, y-1)
+			    end
+			end
+
+			if #delete_rows > 0 then
+				table.sort(delete_rows)
+
+				local function find(t, value)
+				    for _, v in ipairs(t) do
+				        if v == value then return true end
+				    end
+				    return false
+				end
+
+				for _, tetromino in ipairs(tetrominos) do
+				    local i = 1
+				    while i <= #tetromino.blocks do
+				        local block = tetromino.blocks[i]
+
+				        if find(delete_rows, block.y) then
+				            table.remove(tetromino.blocks, i)
+				            field_data[block.y+1][block.x+1] = field_data[block.y+1][block.x+1] - 1
+				      	else
+				      		local offset = 0
+								for _, row in ipairs(delete_rows) do
+									if block.y < row then
+										offset = offset + 1
+									end
+								end
+
+								if offset > 0 then
+									field_data[block.y + 1][block.x + 1] = field_data[block.y + 1][block.x + 1] - 1
+									block.y = block.y + offset
+									field_data[block.y + 1][block.x + 1] = field_data[block.y + 1][block.x + 1] + 1
+								end
+
+				      			i = i + 1
+				      	end
+				    end
+				    if #tetromino.blocks == 0 then
+				    	table.remove(tetromino, _)
+				    end
+				end
+				score = score + SCORE_DATA[#delete_rows] * (level+1)
+			end 
+
+			score = score + softDrops
+			softDrops = 0
+
+			update_level(#delete_rows) end
+	end,
+	
+	update = function(dt)
+		for _, timer in ipairs(timers) do
+			timer:update(dt)
+		end
+
+		if spawning and not timers[3].active then
+			if frames_delayed < ENTRY_DELAY then
+				frames_delayed = frames_delayed + 1
+			else
+				Tetromino:spawn()
+				spawning = false
+				frames_delayed = 0
+			end
+		end
+		
+		if love.keyboard.isDown("s") then
+			UPDATE_START_SPEED = speeds[19]
+			timers[1].duration = UPDATE_START_SPEED
+		else
+			update_fall_speed()
+			if love.keyboard.isDown("d") then
+				if  timers[2].active == false then 
+					DAS = DAS + 1
+					if DAS == 16 and current then
+						current:move_horizontal(1) 
+						DAS = 10
+					end
+					timers[2]:activate()
+				end
+			elseif love.keyboard.isDown("a") then
+				if timers[4].active == false then 
+					DAS = DAS + 1
+					if DAS == 16 and current then
+						current:move_horizontal(-1) 
+						DAS = 10
+					end
+					timers[4]:activate()
+				end
+			end
+		end
+	end,
+	
+	draw = function()
+		love.graphics.setColor(.1, .1, .1)
+		love.graphics.rectangle("fill", GAME_WIDTH, 0, SIDEBAR_WIDTH, GAME_HEIGHT)
+
+		if shaders then
+			for i = 1, 20, 1 do
+				love.graphics.setColor((1-i/20)*0.5, (1-i/20)*0.5, (1-i/20)*0.5)
+				love.graphics.rectangle("line", 10*i, 10*i, GAME_WIDTH-20*i, GAME_HEIGHT-20*i)
+			end
+		end
+		
+		love.graphics.setColor(1,1,1)
+		love.graphics.printf("SCORE:               " .. score, font, GAME_WIDTH+13, GAME_HEIGHT-GAME_HEIGHT*SCORE_HEIGHT_FRACTION, SIDEBAR_WIDTH*2-50, left, 0, 0.5)
+		
+		--[[
+		love.graphics.setColor(.2, .2, .2)
+		for i = COLUMNS, 0, -1 do
+			love.graphics.line(i*CELL_SIZE, 0, i*CELL_SIZE, GAME_HEIGHT)
+		end
+		for i = ROWS, 0, -1 do
+			love.graphics.line(0, i*CELL_SIZE, GAME_WIDTH, i*CELL_SIZE)
+		end
+		]]--
+
+		for _, tetromino in ipairs(tetrominos) do
+			tetromino:draw()
+		end
+	end,
+
+	input = function(key)
+		if key == "r" then
+			GameState.set("game")
+		elseif current then
+			if key == "right" then
+				current:rotate(-1) 
+			end
+			if key == "left" then
+				current:rotate(1) 
+			end
+			if key == "d" and not timers[2].active and not love.keyboard.isDown("s") then
+				DAS = 0
+				current:move_horizontal(1)
+				timers[2]:activate()
+			elseif key == "a" and not timers[4].active and not love.keyboard.isDown("s") then
+				DAS = 0
+				current:move_horizontal(-1)
+				timers[4]:activate()
+			end
+		end
+	end
+}
