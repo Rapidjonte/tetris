@@ -23,6 +23,7 @@ function love.load()
 	v2b = love.graphics.newImage("var2base.png")
 	v1h = love.graphics.newImage("var1high.png")
 	v2h = love.graphics.newImage("var2high.png")
+
 	if shaders then
 		effect = moonshine(moonshine.effects.crt).chain(moonshine.effects.chromasep).chain(moonshine.effects.desaturate)
 		effect.chromasep.radius = 2
@@ -30,6 +31,7 @@ function love.load()
 		effect.desaturate.strength = 0.2
 		effect.crt.scaleFactor = 1
 	end
+
 	GameState.set("game")
 end
 

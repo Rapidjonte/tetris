@@ -59,6 +59,7 @@ function Tetromino:move_down()
 		end
 		check_finished_rows()
 		spawning = true
+		timers[3]:activate()
 		current = nil
 	end
 end

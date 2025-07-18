@@ -12,6 +12,7 @@ return {
 		frames_delayed = 0
 		spawning = true
 
+		delete_rows = {}
 		function createGrid(columns, rows)
 		    local grid = {}
 		    for y = 1, rows do
@@ -27,11 +28,20 @@ return {
 
 		timers = { 
 			timer(UPDATE_START_SPEED, true, function() if current then current:move_down() end end),
-			timer(frameTime),--		[2] auto shift
-			timer(frameTime),--		[3] entry delay
-			timer(frameTime),--		[4] auto shift 2
+			timer(frameTime), --	[2] auto shift 
+			timer(frameTime), --	[3] entry delay
+			timer(frameTime), --	[4] auto shift 2
+			timer(frameTime*86), --	[5] opening entry delay
+			timer(frameTime), -- 	[6] a release cooldown
+			timer(frameTime), -- 	[7] a release cooldown
 		}
 		timers[1]:activate()
+		timers[5]:activate()
+
+		soft_drop_hold_time = 0
+
+		a_ready = true
+		b_ready = true
 
 		function update_fall_speed()
 			if level < 30 then
@@ -56,7 +66,7 @@ return {
 			end end
 
 		function check_finished_rows()
-			local delete_rows = {}
+			delete_rows = {}
 			for y = 1, #field_data do
 				local filled = true
 				for x = 1, #field_data[y] do
@@ -116,46 +126,79 @@ return {
 			softDrops = 0
 
 			update_level(#delete_rows) end
+
+		function b_pressed()
+			return love.keyboard.isDown("a") end
+
+		function a_pressed()
+			return love.keyboard.isDown("d") end
+
+		function down_pressed()
+			return love.keyboard.isDown("s") end
+
+		function left_pressed()
+			return love.keyboard.isDown("left") end
+
+		function right_pressed()
+			return love.keyboard.isDown("right") end
 	end,
 	
 	update = function(dt)
-		for _, timer in ipairs(timers) do
-			timer:update(dt)
+		for i, timer in ipairs(timers) do
+			if not (i == 1 and timers[5].active) then
+				timer:update(dt)
+			end
+		end
+		if timers[6].finished then
+			a_ready = true
+			timers[6].finished = false
+		end
+		if timers[7].finished then
+			b_ready = true
+			timers[7].finished = false
 		end
 
 		if spawning and not timers[3].active then
+			if #delete_rows > 0 then ENTRY_DELAY = 18 else ENTRY_DELAY = 10 end
 			if frames_delayed < ENTRY_DELAY then
 				frames_delayed = frames_delayed + 1
+				timers[3]:activate()
 			else
 				Tetromino:spawn()
 				spawning = false
 				frames_delayed = 0
 			end
 		end
-		
-		if love.keyboard.isDown("s") then
-			UPDATE_START_SPEED = speeds[19]
-			timers[1].duration = UPDATE_START_SPEED
+		if down_pressed() and not (b_pressed() or a_pressed()) then
+			if soft_drop_hold_time >= frameTime * 3 then
+				UPDATE_START_SPEED = speeds[19]
+				timers[1].duration = UPDATE_START_SPEED
+			else
+				soft_drop_hold_time = soft_drop_hold_time + dt
+				update_fall_speed()
+			end
 		else
+			soft_drop_hold_time = 0
 			update_fall_speed()
-			if love.keyboard.isDown("d") then
-				if  timers[2].active == false then 
-					DAS = DAS + 1
-					if DAS == 16 and current then
-						current:move_horizontal(1) 
-						DAS = 10
-					end
-					timers[2]:activate()
+		end
+		if a_pressed() and a_ready and not down_pressed() then
+			if timers[2].active == false then 
+				DAS = DAS + 1
+				if DAS == -1 then DAS = 0 end
+				if DAS >= 16 and current then
+					current:move_horizontal(1) 
+					if current:next_move_horizontal_collide(1) then DAS = 16 else DAS = 10 end
 				end
-			elseif love.keyboard.isDown("a") then
-				if timers[4].active == false then 
-					DAS = DAS + 1
-					if DAS == 16 and current then
-						current:move_horizontal(-1) 
-						DAS = 10
-					end
-					timers[4]:activate()
+				timers[2]:activate()
+			end
+		elseif b_pressed() and b_ready and not down_pressed() then
+			if timers[4].active == false then 
+				DAS = DAS + 1
+				if DAS >= 16 and current then
+					current:move_horizontal(-1) 
+					if current:next_move_horizontal_collide(-1) then DAS = 16 else DAS = 10 end
 				end
+				timers[4]:activate()
 			end
 		end
 	end,
@@ -199,15 +242,34 @@ return {
 			if key == "left" then
 				current:rotate(1) 
 			end
-			if key == "d" and not timers[2].active and not love.keyboard.isDown("s") then
-				DAS = 0
+			if key == "d" and a_ready and not timers[2].active and not down_pressed() then
+				if not timers[3].active then
+					if current:next_move_horizontal_collide(1) then DAS = 16 else DAS = -1 end
+				end
 				current:move_horizontal(1)
 				timers[2]:activate()
-			elseif key == "a" and not timers[4].active and not love.keyboard.isDown("s") then
-				DAS = 0
-				current:move_horizontal(-1)
+			elseif key == "a" and b_ready and not timers[4].active and not down_pressed() then
+				if not timers[3].active then
+					if current:next_move_horizontal_collide(-1) then DAS = 16 else DAS = -1 end
+				end
+				if not a_pressed() then
+					current:move_horizontal(-1)
+				end
 				timers[4]:activate()
 			end
+			if key == "s" and timers[5].active then
+				timers[5]:deactivate()
+			end
+		end
+	end,
+
+	released = function(key)
+		if key == "d" then
+			a_ready = false
+			timers[6]:activate()
+		elseif key == "a" then
+			b_ready = false
+			timers[7]:activate()
 		end
 	end
 }
