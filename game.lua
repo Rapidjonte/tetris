@@ -15,7 +15,7 @@ return {
 
 		MusicManager:switch("playing")
 
-		if shaders then
+		if shaders or effect then
 			if blurring then
 				blurring:stop()
 			end
