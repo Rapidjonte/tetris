@@ -61,8 +61,8 @@ function Tetromino:move_horizontal(amount)
 	if (self:next_move_horizontal_collide(amount) == false) then
 		for _, i in ipairs(self.blocks) do
 			i.x = i.x+amount
-			play(move)
 		end
+		play(move)
 
 		if shaders then
 			local strength = 0
@@ -109,7 +109,7 @@ function Tetromino:move_down()
 		        :onupdate(function()
 		            effect.boxblur.radius_y = blur.radius_y
 		        end)
-		    startShake(0.5, 3 + strength * 1.5)
+		    startShake(0.4, 2 + strength * 1.5)
 
 		    table.insert(explosions, ParticleExplosion.new(self.blocks[1].x*CELL_SIZE, self.blocks[1].y*CELL_SIZE, 25))
 		end

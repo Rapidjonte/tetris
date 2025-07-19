@@ -274,15 +274,39 @@ return {
 	end,
 	
 	draw = function()
-		love.graphics.setColor(.1, .1, .1)
-		love.graphics.rectangle("fill", GAME_WIDTH, 0, SIDEBAR_WIDTH, GAME_HEIGHT)
-
 		if shaders then
 			for i = 1, 20, 1 do
 				love.graphics.setColor((1-i/20)*0.5, (1-i/20)*0.5, (1-i/20)*0.5)
 				love.graphics.rectangle("line", 10*i, 10*i, GAME_WIDTH-20*i, GAME_HEIGHT-20*i)
 			end
+			if current then
+				love.graphics.setBlendMode("lighten", "premultiplied")
+				for _, block in ipairs(current.blocks) do
+					local i = -1
+					while not block:vertical_collide(i) do
+						i = i + 1
+					end
+					if (block.color == "v1") then
+						love.graphics.setColor(colorHEX(colors[level+1][1]))
+					elseif (block.color == "v2") then
+						love.graphics.setColor(colorHEX(colors[level+1][3]))
+					elseif (block.color == "v3") then
+						love.graphics.setColor(colorHEX(colors[level+1][5]))
+					end
+					local c1,c2,c3 = love.graphics.getColor()
+					love.graphics.setColor(c1*0.1,c2*0.1,c3*0.1)
+					if i > 0 then
+						love.graphics.rectangle("fill", block.x*CELL_SIZE, block.y*CELL_SIZE, CELL_SIZE, CELL_SIZE*i)
+					end
+				end
+				love.graphics.setBlendMode("alpha")
+			end
+		else
+			love.graphics.setColor(1, 1, 1, 1)
+			love.graphics.rectangle("line", 0,0, GAME_WIDTH, GAME_HEIGHT)
 		end
+		love.graphics.setColor(.1, .1, .1)
+		love.graphics.rectangle("fill", GAME_WIDTH, 0, SIDEBAR_WIDTH, GAME_HEIGHT)
 
 		if next_tetromino then
 			next_tetromino:draw()

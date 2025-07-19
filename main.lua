@@ -10,7 +10,7 @@ Tetromino = require("tetromino")
 timer = require("timer")
 require("glitched_extension")
 
-shaders = false
+shaders = true
 
 moonshine = require 'moonshine'
 require "shake"

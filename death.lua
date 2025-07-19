@@ -1,6 +1,7 @@
 return {
 	enter = function()
 		removeOne = function()
+			table.insert(explosions, ParticleExplosion.new(tetrominos[#tetrominos].blocks[1].x*CELL_SIZE, tetrominos[#tetrominos].blocks[1].y*CELL_SIZE, 4))
 			table.remove(tetrominos, #tetrominos)
 		end
 
@@ -30,16 +31,22 @@ return {
 	end,
 	
 	draw = function()
-		love.graphics.setColor(.1, .1, .1)
-		love.graphics.rectangle("fill", GAME_WIDTH, 0, SIDEBAR_WIDTH, GAME_HEIGHT)
-		
 		if shaders then
 			for i = 1, 20, 1 do
 				love.graphics.setColor((1-i/20)*0.5, (1-i/20)*0.5, (1-i/20)*0.5)
 				love.graphics.rectangle("line", 10*i, 10*i, GAME_WIDTH-20*i, GAME_HEIGHT-20*i)
 			end
+		else
+			love.graphics.setColor(1, 1, 1, 1)
+			love.graphics.rectangle("line", 0,0, GAME_WIDTH, GAME_HEIGHT)
 		end
+		love.graphics.setColor(.1, .1, .1)
+		love.graphics.rectangle("fill", GAME_WIDTH, 0, SIDEBAR_WIDTH, GAME_HEIGHT)
 		
+		if next_tetromino then
+			next_tetromino:draw()
+		end
+
 		love.graphics.setColor(1,1,1)
 		love.graphics.printf("SCORE:               " .. score, font, GAME_WIDTH+13, GAME_HEIGHT-GAME_HEIGHT*SCORE_HEIGHT_FRACTION, SIDEBAR_WIDTH*2-50, left, 0, 0.5)
 		
