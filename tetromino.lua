@@ -15,8 +15,8 @@ function Tetromino:new(shape, x, y)
     return self
 end
 
-function Tetromino:spawn(static)
-	static = static or false
+function Tetromino:spawn(_static)
+	local static = _static or false
 
 	local letters = {}
     for letter, _ in pairs(TETROMINOS) do
@@ -26,12 +26,12 @@ function Tetromino:spawn(static)
 	local randomLetter = letters[math.random(#letters)]
 	table.insert(tetrominos, (Tetromino(randomLetter, math.floor(COLUMNS/2), 0)))
 
-	if not static then
-		current = tetrominos[#tetrominos]
-		down_ready = false
-		if current:next_move_vertical_collide(0) then
-			GameState.set("death")
-		end
+	timers[1].time = 0
+	current = tetrominos[#tetrominos]
+	down_ready = false
+	softDrops = 0
+	if current:next_move_vertical_collide(0) then
+		GameState.set("death")
 	end
 end
 
@@ -45,6 +45,22 @@ function Tetromino:move_horizontal(amount)
 	if (self:next_move_horizontal_collide(amount) == false) then
 		for _, i in ipairs(self.blocks) do
 			i.x = i.x+amount
+			play(move)
+		end
+
+		if shaders then
+			local strength = 0
+			if level < 30 then
+				strength = speeds[level]
+			else
+				strength = speeds[29]
+			end
+			local blur = { radius_x = 35 + strength * 1.5 }
+			flux.to(blur, 0.1, { radius_x = 0 })
+		        :ease("quadout")
+		        :onupdate(function()
+		            effect.boxblur.radius_x = blur.radius_x
+		        end)
 		end
 	end
 end
@@ -54,7 +70,7 @@ function Tetromino:move_down()
 		for _, i in ipairs(self.blocks) do
 			i.y = i.y+1
 		end
-		if love.keyboard.isDown("s") then
+		if down_pressed() and down_ready then
 			softDrops = softDrops+1
 		end
 	else
@@ -63,6 +79,26 @@ function Tetromino:move_down()
 				field_data[block.y+1][block.x+1] = field_data[block.y+1][block.x+1]+1
 			end
 		end
+
+		if shaders then
+			local strength = 0
+			if level < 30 then
+				strength = speeds[level]
+			else
+				strength = speeds[29]
+			end
+			local blur = { radius_y = 40 + strength * 1.5 }
+			flux.to(blur, 0.6, { radius_y = 0 })
+		        :ease("quadout")
+		        :onupdate(function()
+		            effect.boxblur.radius_y = blur.radius_y
+		        end)
+		    startShake(0.5, 3 + strength * 1.5)
+
+		    table.insert(explosions, ParticleExplosion.new(self.blocks[1].x*CELL_SIZE, self.blocks[1].y*CELL_SIZE, 25))
+		end
+
+		play(land)
 		check_finished_rows()
 		spawning = true
 		timers[3]:activate()
@@ -97,6 +133,7 @@ function Tetromino:next_move_vertical_collide(amount)
 end
 
 function Tetromino:rotate(amount)
+	play(rotate)
 	if self.shape ~= "O" then
 		local pivot_pos = self.blocks[1]
 		

@@ -1,12 +1,21 @@
 return {
 	enter = function(dt)
-		font = love.graphics.newFont("font.ttf", 50)
-
 		level = 0
 		score = 0
 		softDrops = 0
 		total_lines = 0
 		lines_to_next = 10
+
+		if shaders then
+			effect = moonshine(moonshine.effects.crt).chain(moonshine.effects.chromasep).chain(moonshine.effects.desaturate).chain(moonshine.effects.boxblur)
+			effect.chromasep.radius = 2
+			effect.chromasep.angle = 2
+			effect.desaturate.strength = 0.2
+			effect.crt.scaleFactor = 1
+			effect.boxblur.radius={0,0}
+			flashes = {}
+			explosions = {}
+		end
 
 		DAS = 0
 		frames_delayed = 0
@@ -58,6 +67,7 @@ return {
 			lines_to_next = lines_to_next - lines_cleared
 
 			while lines_to_next <= 0 do
+				play(levelup)
 				level = level + 1
 				lines_to_next = lines_to_next + 10
 				if level == 235 then
@@ -120,33 +130,60 @@ return {
 				    	table.remove(tetromino, _)
 				    end
 				end
+
 				score = score + SCORE_DATA[#delete_rows] * (level+1)
+				if shaders then
+					local textToShow = #delete_rows .. " LINES CLEARED!"
+					table.insert(flashes, flashtext.new(
+			            textToShow, 
+			            GAME_WIDTH/2, 
+			            GAME_HEIGHT/2,
+			            {.3, .7, .7},
+			            font,
+			            true
+		        	))
+	        	end
+	        	if not (#delete_rows > 3) then
+	        		play(clear)
+	        	else
+	        		play(tetris)
+	        	end
 			end 
 
 			score = score + softDrops
+			if shaders then
+				local scoreToShow = softDrops
+				if #delete_rows > 0 then
+					scoreToShow = scoreToShow + SCORE_DATA[#delete_rows] * (level+1)
+				end
+					if scoreToShow > 0 then
+					table.insert(flashes, flashtext.new(
+			            "+" .. scoreToShow, 
+			            GAME_WIDTH+13, 
+			            GAME_HEIGHT-GAME_HEIGHT*SCORE_HEIGHT_FRACTION+97,
+			            {.3, .3, .7},
+			            font
+		        	))
+		        end
+	        end
 			softDrops = 0
 
 			update_level(#delete_rows) end
 
 		function b_pressed()
-			return love.keyboard.isDown("a") or (activeJoystick and activeJoystick:isGamepadDown("dpleft"))
-		end
+			return love.keyboard.isDown("a") or (activeJoystick and activeJoystick:isGamepadDown("dpleft")) end
 
 		function a_pressed()
-			return love.keyboard.isDown("d") or (activeJoystick and activeJoystick:isGamepadDown("dpright"))
-		end
+			return love.keyboard.isDown("d") or (activeJoystick and activeJoystick:isGamepadDown("dpright")) end
 
 		function down_pressed()
-			return love.keyboard.isDown("s") or (activeJoystick and activeJoystick:isGamepadDown("dpdown"))
-		end
+			return love.keyboard.isDown("s") or (activeJoystick and activeJoystick:isGamepadDown("dpdown")) end
 
 		function left_pressed()
-			return love.keyboard.isDown("left") or (activeJoystick and activeJoystick:isGamepadDown("x"))
-		end
+			return love.keyboard.isDown("left") or (activeJoystick and activeJoystick:isGamepadDown("x")) end
 
 		function right_pressed()
-			return love.keyboard.isDown("right") or (activeJoystick and activeJoystick:isGamepadDown("b"))
-		end
+			return love.keyboard.isDown("right") or (activeJoystick and activeJoystick:isGamepadDown("b")) end
 	end,
 	
 	update = function(dt)

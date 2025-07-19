@@ -9,8 +9,15 @@ Block = require("block")
 Tetromino = require("tetromino")
 timer = require("timer")
 require("glitched_extension")
-local moonshine = require 'moonshine'
+
 shaders = false
+
+if shaders then
+	moonshine = require 'moonshine'
+	require "shake"
+	flashtext = require "flashtext"
+	ParticleExplosion = require "particles"
+end
 
 local screenWidth, screenHeight = love.window.getDesktopDimensions()
 local windowWidth, windowHeight = GAME_WIDTH*screenWidth/2560, GAME_HEIGHT*screenHeight/1440
@@ -23,28 +30,57 @@ function love.load()
 	v2b = love.graphics.newImage("var2base.png")
 	v1h = love.graphics.newImage("var1high.png")
 	v2h = love.graphics.newImage("var2high.png")
+	font = love.graphics.newFont("font.ttf", 50)
 
-	if shaders then
-		effect = moonshine(moonshine.effects.crt).chain(moonshine.effects.chromasep).chain(moonshine.effects.desaturate)
-		effect.chromasep.radius = 2
-		effect.chromasep.angle = 2
-		effect.desaturate.strength = 0.2
-		effect.crt.scaleFactor = 1
-	end
+	clear = love.audio.newSource("sfx/clear.wav", "static")
+	death = love.audio.newSource("sfx/death.wav", "static")
+	land = love.audio.newSource("sfx/land.wav", "static")
+	levelup = love.audio.newSource("sfx/levelup.wav", "static")
+	move = love.audio.newSource("sfx/move.wav", "static")
+	rotate = love.audio.newSource("sfx/rotate.wav", "static")
+	tetris = love.audio.newSource("sfx/tetris.wav", "static")
 
 	GameState.set("game")
 end
 
+function play(source)
+    local s = source:clone()
+    love.audio.play(s)
+end
+
 function love.update(dt)
 	flux.update(dt)
+
+	if shaders then
+		for i = #flashes, 1, -1 do
+	        if flashes[i].dead then
+	            table.remove(flashes, i)
+	        end
+	    end
+	    for i = #explosions, 1, -1 do
+	        explosions[i]:update(dt)
+	        if explosions[i].dead then
+	            table.remove(explosions, i)
+	        end
+	    end
+	    updateShake(dt)
+	end
 	GameState.update(dt)
 end
 
 function love.draw()
 	push:start()
 	if shaders then
+		local ox, oy = getShakeOffset()
+		love.graphics.translate(ox, oy)
 		effect(function()
 		GameState.draw()
+		for _, flash in ipairs(flashes) do
+        	flash:draw()
+    	end
+    	for _, e in ipairs(explosions) do
+        	e:draw()
+    	end
 		end)
 	else
 		GameState.draw()
@@ -79,6 +115,8 @@ function love.gamepadpressed(joystick, button)
 		GameState.input("right")
 	elseif button == "dpdown" then
 		GameState.input("s")
+	elseif button == "start" then
+		GameState.input("r")
 	end
 end
 

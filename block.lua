@@ -1,11 +1,11 @@
 local Block = Class:extend()
 
-local function setColorHEX(rgba)
+function colorHEX(rgba)
 	local rb = tonumber(string.sub(rgba, 2, 3), 16) 
 	local gb = tonumber(string.sub(rgba, 4, 5), 16) 
 	local bb = tonumber(string.sub(rgba, 6, 7), 16)
 	local ab = tonumber(string.sub(rgba, 8, 9), 16) or nil
-	love.graphics.setColor (love.math.colorFromBytes( rb, gb, bb, ab ))
+	return love.math.colorFromBytes( rb, gb, bb, ab )
 end
 
 function Block:new(x,y,c)
@@ -16,21 +16,22 @@ function Block:new(x,y,c)
 end
 
 function Block:draw()
+	local x,y=self.x,self.y
 	if (self.color == "v1") then
-		setColorHEX(colors[level+1][1])
-		love.graphics.draw(v1b, self.x*CELL_SIZE, self.y*CELL_SIZE, 0, CELL_SIZE/8)
-		setColorHEX(colors[level+1][2])
-		love.graphics.draw(v1h, self.x*CELL_SIZE, self.y*CELL_SIZE, 0, CELL_SIZE/8)
+		love.graphics.setColor(colorHEX(colors[level+1][1]))
+		love.graphics.draw(v1b, x*CELL_SIZE, y*CELL_SIZE, 0, CELL_SIZE/8)
+		love.graphics.setColor(colorHEX(colors[level+1][2]))
+		love.graphics.draw(v1h,x*CELL_SIZE, y*CELL_SIZE, 0, CELL_SIZE/8)
 	elseif (self.color == "v2") then
-		setColorHEX(colors[level+1][3])
-		love.graphics.draw(v2b, self.x*CELL_SIZE, self.y*CELL_SIZE, 0, CELL_SIZE/8)
-		setColorHEX(colors[level+1][4])
-		love.graphics.draw(v2h, self.x*CELL_SIZE, self.y*CELL_SIZE, 0, CELL_SIZE/8)
+		love.graphics.setColor(colorHEX(colors[level+1][3]))
+		love.graphics.draw(v2b, x*CELL_SIZE, y*CELL_SIZE, 0, CELL_SIZE/8)
+		love.graphics.setColor(colorHEX(colors[level+1][4]))
+		love.graphics.draw(v2h,x*CELL_SIZE, y*CELL_SIZE, 0, CELL_SIZE/8)
 	elseif (self.color == "v3") then
-		setColorHEX(colors[level+1][5])
-		love.graphics.draw(v2b, self.x*CELL_SIZE, self.y*CELL_SIZE, 0, CELL_SIZE/8)
-		setColorHEX(colors[level+1][6])
-		love.graphics.draw(v2h, self.x*CELL_SIZE, self.y*CELL_SIZE, 0, CELL_SIZE/8)
+		love.graphics.setColor(colorHEX(colors[level+1][5]))
+		love.graphics.draw(v2b, x*CELL_SIZE, y*CELL_SIZE, 0, CELL_SIZE/8)
+		love.graphics.setColor(colorHEX(colors[level+1][6]))
+		love.graphics.draw(v2h, x*CELL_SIZE, y*CELL_SIZE, 0, CELL_SIZE/8)
 	end
 end
 

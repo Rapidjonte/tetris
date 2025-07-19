@@ -4,6 +4,17 @@ return {
 			table.remove(tetrominos, #tetrominos)
 		end
 
+		if shaders then
+			effect = effect.chain(moonshine.effects.pixelate).chain(moonshine.effects.godsray)
+			local a = { a = 20}
+			pixeling = flux.to(a, 6, { a = 0 })
+		        :ease("quartout")
+		        :onupdate(function()
+		       		effect.pixelate.size = {a.a,a.a*0.001}
+		        end)
+		end
+
+		play(death)
 		removerTimer = timer(0.1, true, function() removeOne() end)
 		removerTimer:activate()
 	end,	
@@ -45,6 +56,9 @@ return {
 
 	input = function(key)
 		if key == "r" then
+			if pixeling then
+				pixeling:stop()
+			end
 			GameState.set("game")
 		end
 	end
