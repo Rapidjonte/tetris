@@ -6,6 +6,13 @@ return {
 		total_lines = 0
 		lines_to_next = 10
 
+		if level == 235 then
+			lines_to_next = lines_to_next + 800
+		end
+		if level > 255 then
+			level = 0
+		end
+
 		MusicManager:switch("playing")
 
 		if shaders then
@@ -229,7 +236,7 @@ return {
 			b_ready = true
 			timers[7].finished = false
 		end
-
+		
 		if spawning and not timers[3].active then
 			if #delete_rows > 0 then ENTRY_DELAY = 18 else ENTRY_DELAY = 10 end
 			if frames_delayed < ENTRY_DELAY then
@@ -364,9 +371,6 @@ return {
 					timers[5]:deactivate()
 				end
 				down_ready = true
-			end
-			if key == "f1" then
-				shaders = false 
 			end
 		end
 	end,

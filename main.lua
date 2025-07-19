@@ -41,8 +41,7 @@ function love.load()
 	smallestFont = love.graphics.newFont("font.ttf", 20)
 
 	MusicManager = require("musicmanager"):new("music/game.ogg", "music/dead.ogg")
-	MusicManager:setVolume("playing", 0.7)
-	MusicManager:setVolume("dead", 0.7)
+	MusicManager:setVolume(0.5)
 
 	clear = love.audio.newSource("sfx/clear.wav", "static")
 	death = love.audio.newSource("sfx/death.wav", "static")
@@ -108,6 +107,10 @@ end
 function love.keypressed(key, scancode, isrepeat)
 	if key == "escape" then
 		love.event.push('quit')
+	elseif key == "m" then
+		MusicManager:toggleMute()
+	elseif key == "f1" then
+		shaders = not shaders
 	else
 		GameState.input(key)
 	end

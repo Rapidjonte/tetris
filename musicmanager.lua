@@ -9,6 +9,12 @@ function MusicManager:new(songPlaying, songDead)
     local s1 = love.audio.newSource(songPlaying, "stream")
     local s2 = love.audio.newSource(songDead, "stream")
 
+    self.isMuted = false
+    self.originalVolumes = {
+        [s1] = 1,
+        [s2] = 1
+    }
+
     s1:setLooping(true)
     s2:setLooping(true)
 
@@ -49,7 +55,9 @@ function MusicManager:switch(toScene)
             fromSong:setVolume(self.volumes[fromSong])
         end)
 
-    flux.to(self.volumes, self.fadeDuration, { [toSong] = 1 })
+    local targetVolume = self.originalVolumes[toSong] or 1
+
+    flux.to(self.volumes, self.fadeDuration, { [toSong] = targetVolume })
         :onstart(function()
             if not toSong:isPlaying() then toSong:play() end
         end)
@@ -60,13 +68,26 @@ function MusicManager:switch(toScene)
     self.current = toScene
 end
 
-function MusicManager:setVolume(scene, volume)
-    local song = self.songs[scene]
-    if song then
+
+function MusicManager:setVolume(volume)
+    for _, song in pairs(self.songs) do
+        self.originalVolumes[song] = volume
         self.volumes[song] = volume
         song:setVolume(volume)
     end
 end
 
+function MusicManager:toggleMute()
+    self.isMuted = not self.isMuted
+
+    for _, song in pairs(self.songs) do
+        local target = self.isMuted and 0 or (self.originalVolumes[song] or 1)
+
+        flux.to(self.volumes, self.fadeDuration, { [song] = target })
+            :onupdate(function()
+                song:setVolume(self.volumes[song])
+            end)
+    end
+end
 
 return MusicManager
