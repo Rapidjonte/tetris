@@ -20,7 +20,7 @@ function FlashText.new(text, x, y, color, font, static)
     self.dead = false
     self.rotation = 0
 
-    local lifetime = 0.6
+    local lifetime = 1
     if not static then
         self.rotation = math.random() * math.pi * 2 / 100
         flux.to(self, 0.3, { scale = 1.2*self.size }):ease("backout")
@@ -30,7 +30,7 @@ function FlashText.new(text, x, y, color, font, static)
         flux.to(self, 0.1, {alpha = 1 })
         self.scale = 0.8
         self.x = self.x - 220
-        lifetime = 1
+        lifetime = 2
     end
     flux.to(self, lifetime, {alpha = 0 }):delay(0.2):oncomplete(function()
         self.dead = true

@@ -6,6 +6,8 @@ return {
 		total_lines = 0
 		lines_to_next = 10
 
+		MusicManager:switch("playing")
+
 		if shaders then
 			if blurring then
 				blurring:stop()
@@ -20,9 +22,9 @@ return {
 			effect.scanlines.opacity = 0.2
 			flashes = {}
 			explosions = {}
-			local a = { x = 500, y = 0}
+			local a = { x = 50, y = 0}
 			effect.boxblur.radius={a.x,a.y}
-			blurring = flux.to(a, 0.1, { x = 0, y = 0 })
+			blurring = flux.to(a, 0.7, { x = 0, y = 0 })
 		        :ease("quartout")
 		        :onupdate(function()
 		       		effect.boxblur.radius = {a.x,a.y}
@@ -294,7 +296,7 @@ return {
 						love.graphics.setColor(colorHEX(colors[level+1][5]))
 					end
 					local c1,c2,c3 = love.graphics.getColor()
-					love.graphics.setColor(c1*0.1,c2*0.1,c3*0.1)
+					love.graphics.setColor(c1*0.11,c2*0.11,c3*0.11)
 					if i > 0 then
 						love.graphics.rectangle("fill", block.x*CELL_SIZE, block.y*CELL_SIZE, CELL_SIZE, CELL_SIZE*i)
 					end
@@ -313,7 +315,9 @@ return {
 		end
 		
 		love.graphics.setColor(1,1,1)
-		love.graphics.printf("SCORE:               " .. score, font, GAME_WIDTH+13, GAME_HEIGHT-GAME_HEIGHT*SCORE_HEIGHT_FRACTION, SIDEBAR_WIDTH*2-50, left, 0, 0.5)
+		love.graphics.printf("SCORE               " .. score, font, GAME_WIDTH+13, GAME_HEIGHT-GAME_HEIGHT*SCORE_HEIGHT_FRACTION, SIDEBAR_WIDTH*2-50, left, 0, 0.5)
+		love.graphics.printf("NEXT", font, GAME_WIDTH+50, GAME_HEIGHT-GAME_HEIGHT*SCORE_HEIGHT_FRACTION-175, SIDEBAR_WIDTH*2-50, center, 0, 0.5)
+		love.graphics.printf("LEVEL               " .. level, font, GAME_WIDTH+13, GAME_HEIGHT-GAME_HEIGHT*SCORE_HEIGHT_FRACTION+200, SIDEBAR_WIDTH*2-50, left, 0, 0.5)
 		
 		--[[
 		love.graphics.setColor(.2, .2, .2)
@@ -360,6 +364,9 @@ return {
 					timers[5]:deactivate()
 				end
 				down_ready = true
+			end
+			if key == "f1" then
+				shaders = false 
 			end
 		end
 	end,

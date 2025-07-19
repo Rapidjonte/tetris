@@ -26,7 +26,7 @@ function Tetromino:spawn()
     for letter, _ in pairs(TETROMINOS) do
         table.insert(letters, letter)
     end
-	math.randomseed(love.timer.getTime())
+	math.randomseed(os.clock() * 1e9)
 
 	if next_piece == "" then
 		next_piece = letters[math.random(#letters)]
@@ -149,7 +149,6 @@ function Tetromino:next_move_vertical_collide(amount)
 end
 
 function Tetromino:rotate(amount)
-	play(rotate)
 	if self.shape ~= "O" then
 		local pivot_pos = self.blocks[1]
 		
@@ -161,6 +160,8 @@ function Tetromino:rotate(amount)
 	   		for i, block in ipairs(self.blocks) do
 	    		block:rotate(pivot_pos, -1 * amount)
 	   		end 
+	   	else
+	   		play(rotate)
 	   	end
 	end
 end
