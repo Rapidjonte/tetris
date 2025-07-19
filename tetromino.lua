@@ -1,30 +1,46 @@
 local Tetromino = Class:extend()
 
-function Tetromino:new(shape, x, y)
+function Tetromino:new(shape, x, y, size)
 	self.shape = shape
     self.block_positions = TETROMINOS[shape].shape
     self.i = #tetrominos+1
 
+    if size == nil then
+    	self.size = 1
+    else
+		self.size = size
+    end
+
     self.blocks = {}
     for i, pos in ipairs(self.block_positions) do
         local _x, _y = pos[1], pos[2]
-        local block = Block(x + _x, y + _y, TETROMINOS[shape].color)
+        local block = Block(x + _x, y + _y, TETROMINOS[shape].color, self.size)
         table.insert(self.blocks, block)
     end
 
     return self
 end
 
-function Tetromino:spawn(_static)
-	local static = _static or false
-
+function Tetromino:spawn()
 	local letters = {}
     for letter, _ in pairs(TETROMINOS) do
         table.insert(letters, letter)
     end
 	math.randomseed(love.timer.getTime())
-	local randomLetter = letters[math.random(#letters)]
-	table.insert(tetrominos, (Tetromino(randomLetter, math.floor(COLUMNS/2), 0)))
+
+	if next_piece == "" then
+		next_piece = letters[math.random(#letters)]
+	end
+
+	table.insert(tetrominos, (Tetromino(next_piece, math.floor(COLUMNS/2), 0)))
+	next_piece = letters[math.random(#letters)]
+	if next_piece == "I" then
+		next_tetromino = Tetromino(next_piece, 15, 13.5,0.8)
+	elseif next_piece == "O" then
+		next_tetromino = Tetromino(next_piece, 15, 13,0.8)
+	else
+		next_tetromino = Tetromino(next_piece, 14.5, 13,0.8)
+	end
 
 	timers[1].time = 0
 	current = tetrominos[#tetrominos]

@@ -7,16 +7,20 @@ return {
 		if shaders then
 			effect = effect.chain(moonshine.effects.pixelate).chain(moonshine.effects.godsray)
 			local a = { a = 20}
-			pixeling = flux.to(a, 6, { a = 0 })
+			pixeling = flux.to(a, 6, { a = 0.0001 })
 		        :ease("quartout")
 		        :onupdate(function()
-		       		effect.pixelate.size = {a.a,a.a*0.001}
+		       		effect.pixelate.size = {a.a,0.0001}
 		        end)
 		end
 
 		play(death)
 		removerTimer = timer(0.1, true, function() removeOne() end)
 		removerTimer:activate()
+
+		end_score = score
+		end_level = level
+		end_lines = total_lines
 	end,	
 	
 	update = function(dt)
@@ -51,6 +55,25 @@ return {
 		
 		for _, tetromino in ipairs(tetrominos) do
 			tetromino:draw()
+		end
+
+		if #tetrominos == 0 then
+			local w, h = 490, 200
+		    local x = (GAME_WIDTH + SIDEBAR_WIDTH - w) / 2
+		    local y = (GAME_WIDTH - h) / 2 + 320
+		    love.graphics.setColor(0.7,0.7,1,0.1)
+			love.graphics.rectangle("fill", x-10, y-16, w+10, h, 20)
+
+			love.graphics.setFont(smallerFont)
+			love.graphics.setColor(0.5,0.5,1)
+			love.graphics.printf("Press R to restart", 0, GAME_HEIGHT/2 - love.graphics.getFont():getHeight()/2, GAME_WIDTH+SIDEBAR_WIDTH, "center")
+
+			love.graphics.setFont(smallestFont)
+			love.graphics.printf("Score: " .. end_score, x+40, y + h/2 - love.graphics.getFont():getHeight()/2-20, w, "left")
+			love.graphics.printf("Lines: " .. end_lines, x+40, y + h/2 - love.graphics.getFont():getHeight()/2+10, w, "left")
+			love.graphics.printf("Level: " .. end_level, x+40, y + h/2 - love.graphics.getFont():getHeight()/2+40, w, "left")
+
+			love.graphics.setFont(font)
 		end
 	end,
 

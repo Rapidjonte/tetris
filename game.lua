@@ -7,19 +7,34 @@ return {
 		lines_to_next = 10
 
 		if shaders then
-			effect = moonshine(moonshine.effects.crt).chain(moonshine.effects.chromasep).chain(moonshine.effects.desaturate).chain(moonshine.effects.boxblur)
+			if blurring then
+				blurring:stop()
+			end
+			effect = moonshine(moonshine.effects.scanlines).chain(moonshine.effects.crt).chain(moonshine.effects.chromasep).chain(moonshine.effects.desaturate).chain(moonshine.effects.boxblur)
 			effect.chromasep.radius = 2
 			effect.chromasep.angle = 2
 			effect.desaturate.strength = 0.2
 			effect.crt.scaleFactor = 1
-			effect.boxblur.radius={0,0}
+			effect.scanlines.frequency = ROWS*10
+			effect.scanlines.thickness = 0.5
+			effect.scanlines.opacity = 0.2
 			flashes = {}
 			explosions = {}
+			local a = { x = 500, y = 0}
+			effect.boxblur.radius={a.x,a.y}
+			blurring = flux.to(a, 0.1, { x = 0, y = 0 })
+		        :ease("quartout")
+		        :onupdate(function()
+		       		effect.boxblur.radius = {a.x,a.y}
+		        end)
 		end
 
 		DAS = 0
 		frames_delayed = 0
 		spawning = true
+
+		next_piece = ""
+		next_tetromino = nil
 
 		delete_rows = {}
 		function createGrid(columns, rows)
@@ -73,6 +88,9 @@ return {
 				if level == 235 then
 					lines_to_next = lines_to_next + 800
 				end
+				if level > 255 then
+					level = 0
+				end
 				update_fall_speed()
 			end end
 
@@ -101,6 +119,7 @@ return {
 				    return false
 				end
 
+				local tetrominos_to_remove = {}
 				for _, tetromino in ipairs(tetrominos) do
 				    local i = 1
 				    while i <= #tetromino.blocks do
@@ -127,13 +146,21 @@ return {
 				      	end
 				    end
 				    if #tetromino.blocks == 0 then
-				    	table.remove(tetromino, _)
+				    	table.insert(tetrominos_to_remove, _)
 				    end
+				end
+				for i = #tetrominos_to_remove, 1, -1 do
+				    table.remove(tetrominos, tetrominos_to_remove[i])
 				end
 
 				score = score + SCORE_DATA[#delete_rows] * (level+1)
 				if shaders then
-					local textToShow = #delete_rows .. " LINES CLEARED!"
+					local textToShow = ""
+					if #delete_rows == 1 then
+						textToShow = " " .. #delete_rows .. " LINE CLEARED!"
+					else
+						textToShow = #delete_rows .. " LINES CLEARED!"
+					end
 					table.insert(flashes, flashtext.new(
 			            textToShow, 
 			            GAME_WIDTH/2, 
@@ -255,6 +282,10 @@ return {
 				love.graphics.setColor((1-i/20)*0.5, (1-i/20)*0.5, (1-i/20)*0.5)
 				love.graphics.rectangle("line", 10*i, 10*i, GAME_WIDTH-20*i, GAME_HEIGHT-20*i)
 			end
+		end
+
+		if next_tetromino then
+			next_tetromino:draw()
 		end
 		
 		love.graphics.setColor(1,1,1)

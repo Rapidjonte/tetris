@@ -8,10 +8,11 @@ function colorHEX(rgba)
 	return love.math.colorFromBytes( rb, gb, bb, ab )
 end
 
-function Block:new(x,y,c)
+function Block:new(x,y,c,s)
 	self.color = c
-	self.x = x
-	self.y = y
+	self.s = s or 1
+	self.x = x*self.s
+	self.y = y*self.s
 	return self
 end
 
@@ -19,19 +20,19 @@ function Block:draw()
 	local x,y=self.x,self.y
 	if (self.color == "v1") then
 		love.graphics.setColor(colorHEX(colors[level+1][1]))
-		love.graphics.draw(v1b, x*CELL_SIZE, y*CELL_SIZE, 0, CELL_SIZE/8)
+		love.graphics.draw(v1b, x*CELL_SIZE, y*CELL_SIZE, 0, CELL_SIZE/8*self.s)
 		love.graphics.setColor(colorHEX(colors[level+1][2]))
-		love.graphics.draw(v1h,x*CELL_SIZE, y*CELL_SIZE, 0, CELL_SIZE/8)
+		love.graphics.draw(v1h,x*CELL_SIZE, y*CELL_SIZE, 0, CELL_SIZE/8*self.s)
 	elseif (self.color == "v2") then
 		love.graphics.setColor(colorHEX(colors[level+1][3]))
-		love.graphics.draw(v2b, x*CELL_SIZE, y*CELL_SIZE, 0, CELL_SIZE/8)
+		love.graphics.draw(v2b, x*CELL_SIZE, y*CELL_SIZE, 0, CELL_SIZE/8*self.s)
 		love.graphics.setColor(colorHEX(colors[level+1][4]))
-		love.graphics.draw(v2h,x*CELL_SIZE, y*CELL_SIZE, 0, CELL_SIZE/8)
+		love.graphics.draw(v2h,x*CELL_SIZE, y*CELL_SIZE, 0, CELL_SIZE/8*self.s)
 	elseif (self.color == "v3") then
 		love.graphics.setColor(colorHEX(colors[level+1][5]))
-		love.graphics.draw(v2b, x*CELL_SIZE, y*CELL_SIZE, 0, CELL_SIZE/8)
+		love.graphics.draw(v2b, x*CELL_SIZE, y*CELL_SIZE, 0, CELL_SIZE/8*self.s)
 		love.graphics.setColor(colorHEX(colors[level+1][6]))
-		love.graphics.draw(v2h, x*CELL_SIZE, y*CELL_SIZE, 0, CELL_SIZE/8)
+		love.graphics.draw(v2h, x*CELL_SIZE, y*CELL_SIZE, 0, CELL_SIZE/8*self.s)
 	end
 end
 

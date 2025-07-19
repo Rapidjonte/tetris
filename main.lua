@@ -12,12 +12,10 @@ require("glitched_extension")
 
 shaders = false
 
-if shaders then
-	moonshine = require 'moonshine'
-	require "shake"
-	flashtext = require "flashtext"
-	ParticleExplosion = require "particles"
-end
+moonshine = require 'moonshine'
+require "shake"
+flashtext = require "flashtext"
+ParticleExplosion = require "particles"
 
 local screenWidth, screenHeight = love.window.getDesktopDimensions()
 local windowWidth, windowHeight = GAME_WIDTH*screenWidth/2560, GAME_HEIGHT*screenHeight/1440
@@ -31,6 +29,8 @@ function love.load()
 	v1h = love.graphics.newImage("var1high.png")
 	v2h = love.graphics.newImage("var2high.png")
 	font = love.graphics.newFont("font.ttf", 50)
+	smallerFont = love.graphics.newFont("font.ttf", 25)
+	smallestFont = love.graphics.newFont("font.ttf", 20)
 
 	clear = love.audio.newSource("sfx/clear.wav", "static")
 	death = love.audio.newSource("sfx/death.wav", "static")

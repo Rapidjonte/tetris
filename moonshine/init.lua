@@ -39,7 +39,7 @@ end
 moonshine.chain = function(w,h,effect)
   -- called as moonshine.chain(effect)'
   if h == nil then
-    effect, w,h = w, love.window.getMode()
+    effect, w,h = w, GAME_WIDTH+SIDEBAR_WIDTH, GAME_HEIGHT
   end
   assert(effect ~= nil, "No effect")
 
