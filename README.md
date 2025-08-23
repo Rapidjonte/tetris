@@ -12,3 +12,8 @@
 * r = restart
 * m = mute all songs
 * f1 = toggle effects
+
+# supported controllers
+* USB SNES Controller
+* Sony Playstation Dualsense (PS5)
+* Xbox 360 Controller
